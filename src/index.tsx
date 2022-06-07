@@ -1,4 +1,4 @@
-import { Detail, Icon, List, getPreferenceValues } from "@raycast/api";
+import { Detail, Icon, List, getPreferenceValues, ActionPanel, Action } from "@raycast/api";
 import { useEffect, useState } from "react";
 import path from "path";
 import { homedir } from "node:os";
@@ -20,9 +20,18 @@ interface Error {
   description: string;
 }
 
+interface Codes {
+  rowid: number;
+  date: string;
+  code: number;
+  sender: string;
+  message: string;
+}
+
 export default function Command() {
   const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState<boolean>(true);
+  const [Codes, setCodes] = useState<Codes[]>([]);
 
   // Get the preference value
   const { minutes } = getPreferenceValues();
@@ -73,6 +82,44 @@ export default function Command() {
     });
   };
 
+  const get2FACode = (messages: Messages[]) => {
+    // list of regexs to match
+    const regexs = [
+      /(^|\s|R|\t|\b|G-|:)(\d{5,8})($|\s|R|\t|\b|\.|,)/,
+      /^(\d{4,8})(\sis your.*code)/,
+      /(code:|is:)\s*(\d{4,8})($|\s|R|\t|\b|\.|,)/i,
+      /(code|is):?\s*(\d{3,8})($|\s|R|\t|\b|\.|,)/i,
+      /(^|code:|is:|\b)\s*(\d{3})-(\d{3})($|\s|R|\t|\b|\.|,)/,
+      /(^|code:|is:|\b)\s*' . $first . '-' . $second . '-(\d{4})($|\s|R|\t|\b|\.|,)/,
+    ];
+
+    // loop through messages and find all matches and format them, like {date: "", code: "", sender: "", message: ""}
+    const matches = messages.reduce((acc: any, message) => {
+      const match = regexs.reduce((acc, regex) => {
+        const match = regex.exec(message.text);
+        if (match) {
+          return match[2];
+        }
+        return acc;
+      }, "");
+      if (match) {
+        return [
+          ...acc,
+          {
+            date: message.message_date,
+            code: parseInt(match),
+            sender: message.sender,
+            message: message.text,
+            rowid: message.ROWID,
+          },
+        ];
+      }
+      return acc;
+    }, [] as string[]);
+
+    return matches;
+  };
+
   useEffect(() => {
     async function run() {
       // if Chat Database is not accessible then set Error
@@ -103,6 +150,23 @@ export default function Command() {
         });
         return;
       }
+
+      // get 2FA Code
+      const codes = get2FACode(messagesByMinutes);
+
+      // if no 2FA code found then set Error
+      if (!codes) {
+        setError({
+          type: "no-code",
+          title: "No 2FA Code Found",
+          description: "No 2FA code found in the last " + minutes + " minutes",
+        });
+        return;
+      }
+
+      // set Codes
+      setCodes(codes);
+
       setLoading(false);
     }
 
@@ -116,6 +180,8 @@ export default function Command() {
         return Icon.Hammer;
       case "no-messages":
         return Icon.MagnifyingGlass;
+      case "no-code":
+        return Icon.ExclamationMark;
     }
   };
 
@@ -133,5 +199,26 @@ export default function Command() {
       </List>
     );
 
-  return <Detail isLoading={loading} markdown="Example for proper error handling" />;
+  return (
+    <List navigationTitle="2FA Codes">
+      {Codes.map((code) => (
+        <List.Item
+          key={code.rowid}
+          title={code.sender}
+          subtitle={code.message}
+          accessories={[
+            {
+              icon: Icon.Person,
+              text: new Date(code.date).toLocaleString(),
+            },
+          ]}
+          actions={
+            <ActionPanel>
+              <Action.CopyToClipboard content={code.code.toString()} />
+            </ActionPanel>
+          }
+        ></List.Item>
+      ))}
+    </List>
+  );
 }
