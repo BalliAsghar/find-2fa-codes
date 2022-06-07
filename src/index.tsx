@@ -15,6 +15,7 @@ interface Messages {
 }
 
 interface Error {
+  type: string;
   title: string;
   description: string;
 }
@@ -54,6 +55,7 @@ export default function Command() {
       return messages;
     } catch (error) {
       setError({
+        type: "error",
         title: "Error",
         description: "Could not get messages",
       });
@@ -61,7 +63,7 @@ export default function Command() {
     }
   };
 
-  const getMessagesByMinutes = async (messages: Messages[], minutes: number): Promise<Messages[]> => {
+  const getMessagesByXMinutes = async (messages: Messages[], minutes: number): Promise<Messages[]> => {
     return messages.filter((message) => {
       const date = new Date(message.message_date);
       const now = new Date();
@@ -75,6 +77,7 @@ export default function Command() {
       // if Chat Database is not accessible then set Error
       if (!(await isAccessible())) {
         setError({
+          type: "unauthorized",
           title: "Error",
           description: `
           You need to give Full-Disk access to raycast!
@@ -88,19 +91,39 @@ export default function Command() {
       const messages = await getMessages();
 
       // Reduce messages to only the last X minutes
-      const messagesByMinutes = await getMessagesByMinutes(messages, minutesNumber);
+      const messagesByMinutes = await getMessagesByXMinutes(messages, minutesNumber);
 
-      console.log(messagesByMinutes);
+      // if there are no messages then set Error
+      if (messagesByMinutes.length === 0) {
+        setError({
+          type: "no-messages",
+          title: "No Messages Found",
+          description: "You have no 2FA messages in the last " + minutes + " minutes",
+        });
+        return;
+      }
     }
 
     run();
   }, []);
 
+  // set the icon
+  const setIcon = (type: string) => {
+    switch (type) {
+      case "unauthorized":
+        return Icon.Hammer;
+      case "no-messages":
+        return Icon.MagnifyingGlass;
+    }
+  };
+
   // if error is set show toast
   if (error) {
     return (
       <List navigationTitle={error.title}>
-        <List.EmptyView icon={Icon.Hammer} title={error.title} description="" />
+        {/*  set icon based on error type */}
+
+        <List.EmptyView icon={setIcon(error.type)} title={error.title} description={error.description} />
       </List>
     );
   }
