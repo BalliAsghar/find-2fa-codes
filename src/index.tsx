@@ -4,6 +4,7 @@ import path from "path";
 import { homedir } from "node:os";
 import fs from "fs/promises";
 import { constants } from "fs";
+import { execSync } from "child_process";
 
 interface Messages {
   ROWID: number;
@@ -34,14 +35,41 @@ export default function Command() {
     }
   };
 
+  // get all messages
+  const getMessages = async (): Promise<Messages[]> => {
+    try {
+      // exucute sqlite3 command
+      const stdout = execSync(`sqlite3 -json ${ChatDB} < ${path.join(__dirname, "./assets/messages.sql")}`);
+
+      // Parse JSON
+      const messages = JSON.parse(Buffer.from(stdout).toString());
+
+      // return messages
+      return messages;
+    } catch (error) {
+      setError({
+        title: "Error",
+        description: "Could not get messages",
+      });
+      return [];
+    }
+  };
+
   useEffect(() => {
     async function run() {
       // if Chat Database is not accessible then set Error
-      if (!(await isAccessible()))
+      if (!(await isAccessible())) {
         setError({
           title: "Error",
           description: "Chat Database is not accessible",
         });
+        return;
+      }
+
+      // get all messages
+      const messages = await getMessages();
+
+      console.log(messages);
     }
 
     run();
