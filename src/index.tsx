@@ -22,6 +22,7 @@ interface Error {
 
 export default function Command() {
   const [error, setError] = useState<Error>();
+  const [loading, setLoading] = useState<boolean>(true);
 
   // Get the preference value
   const { minutes } = getPreferenceValues();
@@ -78,7 +79,7 @@ export default function Command() {
       if (!(await isAccessible())) {
         setError({
           type: "unauthorized",
-          title: "Error",
+          title: "Can't access Messages",
           description: `
           You need to give Full-Disk access to raycast!
           Go to System Preferences > Security & Privacy > Privacy > Full Disk Access
@@ -102,6 +103,7 @@ export default function Command() {
         });
         return;
       }
+      setLoading(false);
     }
 
     run();
@@ -117,16 +119,19 @@ export default function Command() {
     }
   };
 
-  // if error is set show toast
-  if (error) {
+  if (error)
     return (
       <List navigationTitle={error.title}>
-        {/*  set icon based on error type */}
-
         <List.EmptyView icon={setIcon(error.type)} title={error.title} description={error.description} />
       </List>
     );
-  }
 
-  return <Detail markdown="Example for proper error handling" />;
+  if (loading)
+    return (
+      <List navigationTitle="Loading...">
+        <List.EmptyView icon={Icon.Globe} title="Loading..." description="Please wait..." />
+      </List>
+    );
+
+  return <Detail isLoading={loading} markdown="Example for proper error handling" />;
 }
