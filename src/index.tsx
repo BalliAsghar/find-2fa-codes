@@ -1,4 +1,4 @@
-import { Detail, Icon, List } from "@raycast/api";
+import { Detail, Icon, List, getPreferenceValues } from "@raycast/api";
 import { useEffect, useState } from "react";
 import path from "path";
 import { homedir } from "node:os";
@@ -21,6 +21,12 @@ interface Error {
 
 export default function Command() {
   const [error, setError] = useState<Error>();
+
+  // Get the preference value
+  const { minutes } = getPreferenceValues();
+
+  // change type to number
+  const minutesNumber = Number(minutes);
 
   // ChatDB Path
   const ChatDB = path.join(homedir(), "./Library/Messages/chat.db");
@@ -55,13 +61,25 @@ export default function Command() {
     }
   };
 
+  const getMessagesByMinutes = async (messages: Messages[], minutes: number): Promise<Messages[]> => {
+    return messages.filter((message) => {
+      const date = new Date(message.message_date);
+      const now = new Date();
+      const diff = now.getTime() - date.getTime();
+      return diff / 60000 <= minutes;
+    });
+  };
+
   useEffect(() => {
     async function run() {
       // if Chat Database is not accessible then set Error
       if (!(await isAccessible())) {
         setError({
           title: "Error",
-          description: "Chat Database is not accessible",
+          description: `
+          You need to give Full-Disk access to raycast!
+          Go to System Preferences > Security & Privacy > Privacy > Full Disk Access
+          `,
         });
         return;
       }
@@ -69,7 +87,10 @@ export default function Command() {
       // get all messages
       const messages = await getMessages();
 
-      console.log(messages);
+      // Reduce messages to only the last X minutes
+      const messagesByMinutes = await getMessagesByMinutes(messages, minutesNumber);
+
+      console.log(messagesByMinutes);
     }
 
     run();
@@ -79,12 +100,7 @@ export default function Command() {
   if (error) {
     return (
       <List navigationTitle={error.title}>
-        <List.EmptyView
-          icon={Icon.Hammer}
-          title={error.description}
-          description="You need to give Full-Disk access to raycast!
-          Go to System Preferences > Security & Privacy > Privacy > Full Disk Access"
-        />
+        <List.EmptyView icon={Icon.Hammer} title={error.title} description="" />
       </List>
     );
   }
