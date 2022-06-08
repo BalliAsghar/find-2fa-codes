@@ -1,4 +1,4 @@
-import { Detail, Icon, List, getPreferenceValues, ActionPanel, Action } from "@raycast/api";
+import { Icon, List, getPreferenceValues, ActionPanel, Action, showHUD } from "@raycast/api";
 import { useEffect, useState } from "react";
 import path from "path";
 import { homedir } from "node:os";
@@ -23,7 +23,7 @@ interface Error {
 interface Codes {
   rowid: number;
   date: string;
-  code: number;
+  code: number | string;
   sender: string;
   message: string;
 }
@@ -84,21 +84,43 @@ export default function Command() {
 
   const get2FACode = (messages: Messages[]) => {
     // list of regexs to match
-    const regexs = [
-      /(^|\s|R|\t|\b|G-|:)(\d{5,8})($|\s|R|\t|\b|\.|,)/,
-      /^(\d{4,8})(\sis your.*code)/,
-      /(code:|is:)\s*(\d{4,8})($|\s|R|\t|\b|\.|,)/i,
-      /(code|is):?\s*(\d{3,8})($|\s|R|\t|\b|\.|,)/i,
-      /(^|code:|is:|\b)\s*(\d{3})-(\d{3})($|\s|R|\t|\b|\.|,)/,
-      /(^|code:|is:|\b)\s*' . $first . '-' . $second . '-(\d{4})($|\s|R|\t|\b|\.|,)/,
-    ];
+    const regexs = {
+      // Set 1 Return index 2
+      Set1: {
+        index: 2,
+        regex: [
+          /(^|\s|R|\t|\b|G-|:)(\d{5,8})($|\s|R|\t|\b|\.|,)/,
+          /(code:|is:)\s*(\d{4,8})($|\s|R|\t|\b|\.|,)/i,
+          /(code|is):?\s*(\d{3,8})($|\s|R|\t|\b|\.|,)/i,
+        ],
+      },
+      // Set 2 Return index 1
+      Set2: {
+        index: 1,
+        regex: /^(\d{4,8})(\sis your.*code)/,
+      },
+      //  Set 3 Return index 2 and 3
+      Set3: {
+        regex: /(^|code:|is:|\b)\s*(\d{3})-(\d{3})($|\s|R|\t|\b|\.|,)/,
+      },
+    };
 
     // loop through messages and find all matches and format them, like {date: "", code: "", sender: "", message: ""}
     const matches = messages.reduce((acc: any, message) => {
-      const match = regexs.reduce((acc, regex) => {
+      const match = regexs.Set1.regex.reduce((acc, regex) => {
         const match = regex.exec(message.text);
         if (match) {
-          return match[2];
+          return match[regexs.Set1.index];
+        } else {
+          const match = regexs.Set2.regex.exec(message.text);
+          if (match) {
+            return match[regexs.Set2.index];
+          } else {
+            const match = regexs.Set3.regex.exec(message.text);
+            if (match) {
+              return match[2] + match[3];
+            }
+          }
         }
         return acc;
       }, "");
@@ -107,7 +129,7 @@ export default function Command() {
           ...acc,
           {
             date: message.message_date,
-            code: parseInt(match),
+            code: match,
             sender: message.sender,
             message: message.text,
             rowid: message.ROWID,
@@ -214,7 +236,7 @@ export default function Command() {
           ]}
           actions={
             <ActionPanel>
-              <Action.CopyToClipboard content={code.code.toString()} />
+              <Action.Paste content={code.code.toString()} onPaste={() => showHUD("Copied To Clipboard")} />
             </ActionPanel>
           }
         ></List.Item>
