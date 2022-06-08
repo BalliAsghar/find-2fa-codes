@@ -93,7 +93,6 @@ export default function Command() {
       /(^|code:|is:|\b)\s*' . $first . '-' . $second . '-(\d{4})($|\s|R|\t|\b|\.|,)/,
     ];
 
-    // loop through messages and find all matches and format them, like {date: "", code: "", sender: "", message: ""}
     const matches = messages.reduce((acc: any, message) => {
       const match = regexs.reduce((acc, regex) => {
         const match = regex.exec(message.text);
