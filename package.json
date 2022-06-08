@@ -13,7 +13,7 @@
   "commands": [
     {
       "name": "index",
-      "title": "IMessage - Find 2FA Codes",
+      "title": "Find 2FA Codes",
       "description": "Find 2FA Codes in your recent IMessages",
       "mode": "view"
     }
