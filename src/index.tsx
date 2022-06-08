@@ -1,4 +1,4 @@
-import { Icon, List, getPreferenceValues, ActionPanel, Action } from "@raycast/api";
+import { Icon, List, getPreferenceValues, ActionPanel, Action, showHUD } from "@raycast/api";
 import { useEffect, useState } from "react";
 import path from "path";
 import { homedir } from "node:os";
@@ -236,7 +236,7 @@ export default function Command() {
           ]}
           actions={
             <ActionPanel>
-              <Action.CopyToClipboard content={code.code.toString()} />
+              <Action.Paste content={code.code.toString()} onPaste={() => showHUD("Copied To Clipboard")} />
             </ActionPanel>
           }
         ></List.Item>
