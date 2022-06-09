@@ -203,6 +203,8 @@ export default function Command() {
         return Icon.MagnifyingGlass;
       case "no-code":
         return Icon.ExclamationMark;
+      case "loading":
+        return Icon.Eye;
     }
   };
 
@@ -216,7 +218,7 @@ export default function Command() {
   if (loading)
     return (
       <List navigationTitle="Loading...">
-        <List.EmptyView icon={Icon.Globe} title="Loading..." description="Please wait..." />
+        <List.EmptyView icon={setIcon("loading")} title="Loading..." description="Please wait..." />
       </List>
     );
 
@@ -229,13 +231,13 @@ export default function Command() {
           subtitle={code.message}
           accessories={[
             {
-              icon: Icon.Person,
+              icon: Icon.Calendar,
               text: new Date(code.date).toLocaleString(),
             },
           ]}
           actions={
             <ActionPanel>
-              <Action.Paste content={code.code.toString()} onPaste={() => showHUD("Copied To Clipboard")} />
+              <Action.CopyToClipboard content={code.code.toString()} />
             </ActionPanel>
           }
         ></List.Item>

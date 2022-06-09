@@ -1,20 +1,21 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "IMessage - Find 2FA Codes",
-  "title": "IMessage - Find 2FA Codes",
-  "description": "Find 2FA Codes in your messages",
-  "icon": "command-icon.png",
+  "name": "imessages---find-2fa-codes",
+  "title": "IMessages - Find 2FA Codes",
+  "description": "Find 2FA Codes in your recent IMessages.",
+  "icon": "icon.png",
   "author": "BalliAsghar",
   "categories": [
-    "Productivity",
-    "Communication"
+    "Applications",
+    "Communication",
+    "Productivity"
   ],
   "license": "MIT",
   "commands": [
     {
-      "name": "index",
+      "name": "find-2fa-codes",
       "title": "Find 2FA Codes",
-      "description": "Find 2FA Codes in your recent IMessages",
+      "description": "Find 2FA Codes in your recent IMessages.",
       "mode": "view"
     }
   ],
@@ -29,7 +30,7 @@
     }
   ],
   "dependencies": {
-    "@raycast/api": "^1.35.2"
+    "@raycast/api": "^1.36.0"
   },
   "devDependencies": {
     "@types/node": "~16.10.0",
