@@ -17,4 +17,4 @@ Default: 15 minutes
 
 #
 
-This work is inspired by[iMessage 2FA Workflow for Alfred](https://github.com/squatto/alfred-imessage-2fa) by [Squatto](https://github.com/squatto)
+This work is inspired by [iMessage 2FA Workflow for Alfred](https://github.com/squatto/alfred-imessage-2fa) by [Squatto](https://github.com/squatto)
