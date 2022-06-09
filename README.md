@@ -9,6 +9,16 @@ Find 2 factor Authentication Codes in your recent IMessages
 Too Give Access, Go to **System Preferences > Security & Privacy > Privacy > Full Disk Access**
 Then check Raycast in the list of apps
 
+## Installation
+
+First, install raycast
+
+then clone the repo
+
+```bash
+git clone https://github.com/BalliAsghar/find-2fa-codes.git
+```
+
 ## Settings
 
 ### How far back to search for 2FA codes?
