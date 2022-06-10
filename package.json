@@ -1,12 +1,11 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "imessages---find-2fa-codes",
+  "name": "imessages-find-2fa-codes",
   "title": "IMessages - Find 2FA Codes",
   "description": "Find 2FA Codes in your recent IMessages.",
   "icon": "icon.png",
   "author": "BalliAsghar",
   "categories": [
-    "Applications",
     "Communication",
     "Productivity"
   ],
